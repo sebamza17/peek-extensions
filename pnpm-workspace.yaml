@@ -1,0 +1,3 @@
+packages:
+  - 'packages/utils/addon'
+  - 'packages/utils/test-app'
