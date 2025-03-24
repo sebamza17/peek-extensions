@@ -1,13 +1,16 @@
 {
-  "name": "@peek-extensions",
+  "name": "peek-extensions-utils-test",
   "version": "0.0.0",
   "description": "The default blueprint for Embroider v2 addons.",
   "keywords": [
     "ember-addon"
   ],
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sebamza17/peek-extensions.git#main"
+  },
   "license": "MIT",
-  "author": "",
+  "author": "sebamza17",
   "exports": {
     ".": {
       "types": "./declarations/index.d.ts",
@@ -65,7 +68,7 @@
     "@tsconfig/ember": "^3.0.8",
     "babel-plugin-ember-template-compilation": "^2.2.5",
     "concurrently": "^9.0.1",
-    "ember-source": "^5.4.0",
+    "ember-source": "~6.3.0",
     "ember-template-lint": "^6.0.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
@@ -81,7 +84,8 @@
     "typescript-eslint": "^8.19.1"
   },
   "peerDependencies": {
-    "ember-source": ">= 4.12.0"
+    "ember-source": ">= 4.12.0",
+    "webpack": ">= 5.0.0"
   },
   "ember": {
     "edition": "octane"
@@ -89,6 +93,14 @@
   "ember-addon": {
     "version": 2,
     "type": "addon",
-    "main": "addon-main.cjs"
-  }
+    "main": "addon-main.cjs",
+    "app-js": {
+      "./helpers/uniq-id.js": "./dist/_app_/helpers/uniq-id.js"
+    }
+  },
+  "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/sebamza17/peek-extensions/issues"
+  },
+  "homepage": "https://github.com/sebamza17/peek-extensions/tree/main#readme"
 }
