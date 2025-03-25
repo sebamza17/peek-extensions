@@ -15,9 +15,9 @@ export interface PeekExtensionsAPI {
     setCSSCustomProperty: (name: string, value: string) => void
   }
   apolloGql: {
-    gqlStringWrapper: unknown,
-    query: (callerExtension: Extension, query: string, variables: object) => Promise<unknown>,
-    mutation: (callerExtension: Extension, query: string, variables: object) => Promise<unknown>
+    gqlStringWrapper?: unknown,
+    query?: (callerExtension: Extension, query: string, variables: object) => Promise<unknown>,
+    mutation?: (callerExtension: Extension, query: string, variables: object) => Promise<unknown>
   },
   constants: {
     [key: string]: unknown
@@ -209,11 +209,11 @@ export abstract class Extension {
     method: string,
     gql: string,
     variables: { [key: string]: unknown; } = {}
-  ): Promise<unknown> {
+  ): Promise<unknown> | undefined {
     if (method === 'query') {
-      return this.extensionsAPI.apolloGql.query(this, gql, variables)
+      return this.extensionsAPI.apolloGql.query?.(this, gql, variables)
     } else if (method === 'mutation') {
-      return this.extensionsAPI.apolloGql.mutation(this, gql, variables)
+      return this.extensionsAPI.apolloGql.mutation?.(this, gql, variables)
     }
 
     return Promise.reject(new Error(`Extension::peekExtensionsAPIProxyApollo(): method ${method} not found`))

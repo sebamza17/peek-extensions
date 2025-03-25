@@ -1,22 +1,13 @@
 import Service, { inject as service } from '@ember/service'
 import Route from '@ember/routing/route'
-import Transition from '@ember/routing/-private/transition'
-import LegacyModalHandlerService, {
-  LegacyModalHandlerEventName,
-  LegacyModalMessageData
-} from '@peek/client/services/legacy-modal-handler'
 import ExtensionLogger from 'peek-extensions-utils-test/ExtensionLogger'
 import ExtensionStyles from 'peek-extensions-utils-test/ExtensionStyles'
-import gql from 'graphql-tag'
 import { Extension, type PeekExtensionsAPI } from 'peek-extensions-utils-test/Extension'
 import { action } from '@ember/object'
 import { getOwner } from '@ember/application'
 import { tracked } from '@glimmer/tracking'
-import { extendable, extendableProperties } from '@peek/client/decorators/extendable'
-import { broadcastToExtensions } from '@peek/client/decorators/broadcast-to-extensions'
-import { DocumentNode, FetchPolicy } from '@apollo/client/core'
-import { ApolloQueryResult, TypedDocumentNode } from '@apollo/client'
-import { useQuery, useMutation } from 'glimmer-apollo'
+import { extendable, extendableProperties } from 'peek-extensions-utils-test/decorators/extendable'
+import { broadcastToExtensions } from 'peek-extensions-utils-test/decorators/broadcast-to-extensions'
 
 /**
  * methods from this service needs to be declared as @action so context its bound correctly
@@ -25,10 +16,6 @@ import { useQuery, useMutation } from 'glimmer-apollo'
  * as "this" = this service
  */
 export default class PeekExtensionsAPIService extends Service {
-  @service declare toastNotification: ToastNotificationService
-  @service declare router: Route
-  @service declare legacyModalHandler: LegacyModalHandlerService
-
   // DO NOT REMOVE THESE @extendable/@broadcastToExtensions properties
   // this is for our text-extension-test.js suite
   @tracked _testNonExtendableProperty = 'this text should not be accessible'
@@ -61,9 +48,6 @@ export default class PeekExtensionsAPIService extends Service {
 
     return {
       methods: {
-        redirectTo: this.redirectTo.bind(this),
-        showToast: this.showToast.bind(this),
-        openLegacyModal: this.openLegacyModal.bind(this),
         invokeLookup: this.invokeLookup.bind(this)
       },
       styles: {
@@ -74,14 +58,8 @@ export default class PeekExtensionsAPIService extends Service {
         log: this.log.bind(this),
         logError: this.logError.bind(this)
       },
-      apolloGql: {
-        gqlStringWrapper: gql,
-        query: this.apolloQuery.bind(this),
-        mutation: this.apolloMutation.bind(this)
-      },
-      constants: {
-        LegacyModalHandlerEventName
-      }
+      apolloGql: {},
+      constants: {}
     }
   }
 
@@ -91,37 +69,6 @@ export default class PeekExtensionsAPIService extends Service {
 
   logError (message: string, ...info: unknown[]): void {
     ExtensionLogger.logError(message, ...info)
-  }
-
-  openLegacyModal (callerExtension: Extension, actionType: LegacyModalHandlerEventName, data: LegacyModalMessageData = {}): void {
-    ExtensionLogger.log('Ember - Service::ExtensionsAPI::openLegacyModal(): opening legacy modal', {
-      caller: callerExtension,
-      arguments: {
-        ...arguments
-      }
-    })
-    // eslint-disable-next-line no-useless-call
-    return this.legacyModalHandler.openLegacyModal.call(this.legacyModalHandler, actionType, data)
-  }
-
-  redirectTo (callerExtension: Extension, route: string): Transition<unknown> {
-    ExtensionLogger.log('Ember - Service::ExtensionsAPI::redirectTo(): redirecting', {
-      caller: callerExtension,
-      arguments: {
-        ...arguments
-      }
-    })
-    return this.router.transitionTo(route)
-  }
-
-  showToast (callerExtension: Extension, message: string, type: string): void {
-    ExtensionLogger.log('Ember - Service::ExtensionsAPI::showToast(): showing toast', {
-      caller: callerExtension,
-      arguments: {
-        ...arguments
-      }
-    })
-    this.toastNotification.show(message, type)
   }
 
   /**
@@ -137,11 +84,25 @@ export default class PeekExtensionsAPIService extends Service {
     ExtensionLogger.log('Ember - Service::ExtensionsAPI::invokeLookup(): invoking Ember lookup from extension', {
       caller: callerExtension,
       arguments: {
+        // eslint-disable-next-line prefer-rest-params
         ...arguments
       }
     })
 
+    // @ts-expect-error this is never undefined
     const service = getOwner(this).lookup(`service:${serviceName}`)
+
+    if (!service) {
+      ExtensionLogger.logError(`Ember - Service::ExtensionsAPI::invokeLookup - Service "service:${serviceName}" not found.`, {
+        caller: callerExtension,
+        arguments: {
+          // eslint-disable-next-line prefer-rest-params
+          ...arguments
+        }
+      })
+
+      return
+    }
 
     // this proxy only allows "get" access to @extendable properties/methods
     // but won't "set" unless we define a setter for properties
@@ -175,60 +136,5 @@ export default class PeekExtensionsAPIService extends Service {
         }
       }
     )
-  }
-
-  /**
-   * Executes a query using Apollo Client
-   * @param callerExtension
-   * @param query
-   * @param variables
-   * @returns Promise<ApolloQueryResult>
-   */
-  apolloQuery (callerExtension: Extension, query: DocumentNode | TypedDocumentNode<never, Object>, variables: Object): Promise<ApolloQueryResult<unknown>> | undefined {
-    ExtensionLogger.log('Ember - Service::ExtensionsAPI::apolloQuery - Extension called Apollo Query', {
-      caller: callerExtension,
-      arguments: {
-        ...arguments
-      }
-    })
-
-    const options = {
-      fetchPolicy: 'no-cache' as FetchPolicy,
-      variables
-    }
-
-    const queryObject = useQuery(this, () => [
-      query,
-      { ...options }
-    ])
-
-    return queryObject.refetch()
-  }
-
-  /**
-   * Executes a mutation using Apollo Client
-   * @param callerExtension
-   * @param mutation
-   * @param variables
-   * @returns Promise<ApolloMutationResult>
-   */
-  apolloMutation (callerExtension: Extension, mutation: DocumentNode | TypedDocumentNode<never, Object>, variables: Object): Promise<unknown> | undefined {
-    ExtensionLogger.log('Ember - Service::ExtensionsAPI::apolloMutation - Extension called Apollo Mutation', {
-      caller: callerExtension,
-      arguments: {
-        ...arguments
-      }
-    })
-
-    const options = {
-      variables
-    }
-
-    const mutationObject = useMutation(this, () => [
-      mutation,
-      { ...options }
-    ])
-
-    return mutationObject.mutate()
   }
 }

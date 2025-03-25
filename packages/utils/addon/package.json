@@ -1,6 +1,6 @@
 {
   "name": "peek-extensions-utils-test",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "The default blueprint for Embroider v2 addons.",
   "keywords": [
     "ember-addon"
@@ -52,13 +52,16 @@
   "dependencies": {
     "@embroider/addon-shim": "^1.8.9",
     "@types/rsvp": "^4.0.9",
-    "decorator-transforms": "^2.2.2"
+    "@ember-decorators/utils": "^6.1.1",
+    "decorator-transforms": "^2.2.2",
+    "ember-decorators": "^6.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
     "@babel/plugin-transform-typescript": "^7.25.2",
     "@babel/runtime": "^7.25.6",
+    "@babel/plugin-proposal-decorators": "^7.22.15",
     "@embroider/addon-dev": "^7.1.0",
     "@eslint/js": "^9.17.0",
     "@glint/core": "^1.4.0",
@@ -97,7 +100,11 @@
     "type": "addon",
     "main": "addon-main.cjs",
     "app-js": {
-      "./helpers/uniq-id.js": "./dist/_app_/helpers/uniq-id.js"
+      "./helpers/uniq-id.js": "./dist/_app_/helpers/uniq-id.js",
+      "./services/extension-events.js": "./dist/_app_/services/extension-events.js",
+      "./services/extension-handler.js": "./dist/_app_/services/extension-handler.js",
+      "./services/extension-loader.js": "./dist/_app_/services/extension-loader.js",
+      "./services/extensions-api.js": "./dist/_app_/services/extensions-api.js"
     }
   },
   "main": "index.js",

@@ -39,7 +39,8 @@ export default class ExtensionEventsService extends Service.extend(Evented) {
   sendEvent (message: EventData = {}): void {
     ExtensionLogger.log('Ember - Service::ExtensionEvents::sendEvent(): received message', message)
     const eventName = message.eventName ?? ExtensionEventNames.EXTENSION_UPDATE
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
+    // @ts-expect-error trigger is defined in Evented
     this.trigger(eventName, message)
   }
 
@@ -54,7 +55,7 @@ export default class ExtensionEventsService extends Service.extend(Evented) {
     if (!this.subscribedExtensionEvents.has(eventName)) {
       this.subscribedExtensionEvents.set(eventName, handler)
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      // @ts-expect-error on is defined in Evented
       this.on(eventName, (event: Event) => {
         handler(event)
       })
@@ -77,13 +78,11 @@ export default class ExtensionEventsService extends Service.extend(Evented) {
     if (!this.subscribedAppEvents.has(eventName)) {
       this.subscribedAppEvents.set(eventName, [handlerObject])
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const existingHandlers = this.subscribedAppEvents.get(eventName)
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       this.subscribedAppEvents.set(eventName, [...existingHandlers, handlerObject])
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    // @ts-expect-error on is defined in Evented
     this.on(eventName, (event: Event) => {
       handler(event)
     })

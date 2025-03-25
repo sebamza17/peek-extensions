@@ -80,6 +80,9 @@ export default ts.config(
     extends: [...ts.configs.recommendedTypeChecked, ember.configs.gts],
     rules: {
       'no-prototype-builtins': 'off',
+      'prefer-rest-params': 'off',
+      'ember/no-runloop': 'off',
+      '@typescript-eslint/no-wrapper-object-types': 'off',
       '@typescript-eslint/ban-types': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -90,6 +93,10 @@ export default ts.config(
       '@typescript-eslint/no-inferrable-types': 'off',
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
       '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
