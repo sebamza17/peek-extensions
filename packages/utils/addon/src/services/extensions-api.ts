@@ -21,20 +21,36 @@ export default class PeekExtensionsAPIService extends Service {
   @tracked _testNonExtendableProperty = 'this text should not be accessible'
   @tracked @extendable _testExtendableProperty = 'this text is assigned on extensions-api service'
   @tracked exampleArray: string[] = ['this', 'is', 'an', 'example', 'array']
+  @tracked exampleArrayForMethod: string[] = ['this', 'is', 'an', 'example', 'array', 'for', 'methods']
 
   @broadcastToExtensions
   get arrayToBroadcast (): string[] {
     return this.exampleArray
   }
 
-  @broadcastToExtensions({ disabled: true, disableForInstallIdList: ['disabeld-extension-id'] })
+  @broadcastToExtensions({ disabled: true })
   get arrayWithBroadcastDisabled (): string[] {
     return this.exampleArray
   }
 
-  @broadcastToExtensions({ disabled: true, disableForInstallIdList: ['disabeld-extension-id'] })
+  @broadcastToExtensions({ disableForInstallIdList: ['disabled-extension-id'] })
   get arrayWithBroadcastDisabledById (): string[] {
     return this.exampleArray
+  }
+
+  @action
+  @broadcastToExtensions
+  testMethod (value1: string, value2: string): string[] {
+    this.exampleArrayForMethod.push(value1, value2)
+    return this.exampleArrayForMethod
+  }
+
+  @action
+  @broadcastToExtensions
+  testMethodPromise (): Promise<string[]> {
+    return new Promise((resolve) => {
+      resolve(this.exampleArrayForMethod)
+    })
   }
   // END DO NOT REMOVE
 
