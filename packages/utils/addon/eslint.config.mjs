@@ -89,6 +89,7 @@ export default ts.config(
       '@typescript-eslint/no-unsafe-function-type': 'off',
       '@typescript-eslint/no-inferrable-types': 'off',
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
+      '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {

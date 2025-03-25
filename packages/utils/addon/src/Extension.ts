@@ -98,6 +98,8 @@ export interface ExtensionData {
 export interface EventData {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
+  eventName?: string
+  data?: object
 }
 
 export interface AppEventData extends EventData {

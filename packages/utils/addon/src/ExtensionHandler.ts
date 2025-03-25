@@ -1,6 +1,7 @@
 import ExtensionRegistry from 'peek-extensions-utils-test/ExtensionRegistry'
 import {
   Extension,
+  type EventData,
   type ExtensionData,
   type ExtensionDependency,
   type PeekExtensionsAPI,
@@ -9,7 +10,6 @@ import * as AvailableExtensions from 'peek-extensions-utils-test/classes/Availab
 import uid from 'peek-extensions-utils-test/helpers/uniq-id'
 import ExtensionLogger from 'peek-extensions-utils-test/ExtensionLogger'
 import ExtensionStyles from 'peek-extensions-utils-test/ExtensionStyles'
-
 
 export enum ExtensionNames {
   GENERIC = 'GenericExtension',
@@ -36,7 +36,7 @@ export default class ExtensionHandler {
   static setupExtension (
     extensionName: ExtensionNames,
     owner: object,
-    sendEventToApp: (eventData: unknown) => void,
+    sendEventToApp: (eventData: EventData) => void,
     listenToAppEvent: (extensionListening: Extension, eventName: string, handler: (event: Event) => void) => void,
     loadImports: (imports: ExtensionDependency[]) => Promise<{ [key: string]: unknown }>,
     extensionsAPI: PeekExtensionsAPI,
