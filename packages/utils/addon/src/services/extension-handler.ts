@@ -10,18 +10,22 @@ import Service, { inject as service } from '@ember/service'
 import { tracked } from '@glimmer/tracking'
 import { hash } from 'rsvp'
 import { action } from '@ember/object'
-import type ExtensionEventsService from './extension-events.ts'
-import type PeekExtensionsAPIService from './extensions-api.ts'
+import type ExtensionEventsService from 'peek-extensions-utils-test/services/extension-events'
+import type PeekExtensionsAPIService from 'peek-extensions-utils-test/services/extensions-api'
 
 export const WINDOW_SCRIPT_LOAD_EVENT = 'extension-main-script-loaded'
 
-export default class ExtensionHandlerService extends Service {
+export default abstract class ExtensionHandlerService extends Service {
   @service('extensions/extension-events') extensionEvents!: ExtensionEventsService
   @service('extensions/extensions-api') extensionsAPI!: PeekExtensionsAPIService
 
   @tracked activeExtensions: Extension[] = []
   @tracked extensionImports: ExtensionDependency[] = []
   @tracked importedGenericDependencyID: number = 0
+
+  // these 2 methods should be implemented by any FE ember app that is implementing this dependency
+  abstract dynamicallyImportLocalDependency (importObject: ExtensionDependency): Promise<ResolvedExtensionDependency>
+  abstract dynamicallyImportLocalWebComponents (importObject: ExtensionDependency): Promise<ResolvedExtensionDependency>
 
   /**
    * sets up a single extension for a given owner
@@ -72,9 +76,9 @@ export default class ExtensionHandlerService extends Service {
         ExtensionHandler.setupExtension(
           extension.name,
           owner,
-          this.extensionEvents.sendEvent.bind(this.extensionEvents),
-          this.extensionEvents.subscribeToAppEvent.bind(this.extensionEvents),
-          this.loadExtensionImports.bind(this),
+          this.extensionEvents.sendEvent,
+          this.extensionEvents.subscribeToAppEvent,
+          this.loadExtensionImports,
           this.extensionsAPI.getAPIProxy(this.logsEnabled()),
           extension.data,
           this.logsEnabled()
@@ -121,7 +125,7 @@ export default class ExtensionHandlerService extends Service {
    * @returns { [moduleName: module] }
    */
   @action
-  private loadExtensionImports (imports: ExtensionDependency[] = []): Promise<{ [key: string]: ResolvedExtensionDependency }> {
+  protected loadExtensionImports (imports: ExtensionDependency[] = []): Promise<{ [key: string]: ResolvedExtensionDependency }> {
     if (!imports || imports.length === 0) {
       return new Promise((resolve) => {
         resolve({})
@@ -151,11 +155,9 @@ export default class ExtensionHandlerService extends Service {
       importPromises[importName] = importPromise
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
     return hash(importPromises).then((importedModules = {}) => {
       ExtensionLogger.log('EMBER - Service::ExtensionHandler::loadExtensionImports() - imports loaded:', importedModules)
       return importedModules
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     }).catch((error: object) => {
       ExtensionLogger.logError('Ember - Service::ExtensionHandler::loadExtensionImports(): error while trying to load imports', error)
       throw new Error('Ember - Service::ExtensionHandler::loadExtensionImports(): error while trying to load imports', {
@@ -167,44 +169,19 @@ export default class ExtensionHandlerService extends Service {
   /**
    * imports the entire web-component bundle from the extensions package using ember-auto-import
    * @param importObject
-   * @private
+   * @protected
    */
-  private importWebComponent (importObject: ExtensionDependency): Promise<ResolvedExtensionDependency> {
-    return new Promise((resolve, reject) => {
-      // @ts-expect-error '@peek/extensions/dist/components.js' exists
-      import('@peek/extensions/dist/components.js').then((module: { default: Function }) => {
-        resolve({
-          type: importObject.type,
-          isMainScript: importObject.isMainScript ?? false,
-          module
-        })
-      }).catch(error => {
-        console.error('IMPORT ERROR', error)
-        reject(error)
-      })
-    })
+  protected importWebComponent (importObject: ExtensionDependency): Promise<ResolvedExtensionDependency> {
+    return this.dynamicallyImportLocalWebComponents(importObject)
   }
 
   /**
    * imports a local dependency from the extensions package using ember-auto-import
    * @param importObject
-   * @private
+   * @protected
    */
-  private importLocalDependency (importObject: ExtensionDependency): Promise<ResolvedExtensionDependency> {
-    const { url } = importObject
-
-    return new Promise((resolve, reject) => {
-      import(`@peek/extensions/dist/${url}.js`).then((module: { default: Function }) => {
-        resolve({
-          type: importObject.type,
-          isMainScript: importObject.isMainScript ?? false,
-          module
-        })
-      }).catch(error => {
-        console.error('IMPORT ERROR', error)
-        reject(error)
-      })
-    })
+  protected importLocalDependency (importObject: ExtensionDependency): Promise<ResolvedExtensionDependency> {
+    return this.dynamicallyImportLocalDependency(importObject)
   }
 
   /**
@@ -214,9 +191,9 @@ export default class ExtensionHandlerService extends Service {
    * it also imports the default function from the dependency to get a reference to that same default function
    * we're prefetching the main script to use browser cache, then we try to add a new script tag to the document
    * @param importObject
-   * @private
+   * @protected
    */
-  private importGenericDependency (importObject: ExtensionDependency): Promise<ResolvedExtensionDependency> {
+  protected importGenericDependency (importObject: ExtensionDependency): Promise<ResolvedExtensionDependency> {
     const { url, isMainScript } = importObject
     const { type, async, defer } = importObject.scriptConfig ?? {}
 
@@ -340,7 +317,7 @@ export default class ExtensionHandlerService extends Service {
   }
 
   // set "extensionLogs" query param to enable verbose logging for extensions
-  private logsEnabled (): boolean {
+  protected logsEnabled (): boolean {
     try {
       return new URLSearchParams(window.location.search).get('extensionLogs') === 'true' || false
     } catch (error) {

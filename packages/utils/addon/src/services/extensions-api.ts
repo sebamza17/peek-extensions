@@ -84,7 +84,6 @@ export default class PeekExtensionsAPIService extends Service {
     ExtensionLogger.log('Ember - Service::ExtensionsAPI::invokeLookup(): invoking Ember lookup from extension', {
       caller: callerExtension,
       arguments: {
-        // eslint-disable-next-line prefer-rest-params
         ...arguments
       }
     })
@@ -96,7 +95,6 @@ export default class PeekExtensionsAPIService extends Service {
       ExtensionLogger.logError(`Ember - Service::ExtensionsAPI::invokeLookup - Service "service:${serviceName}" not found.`, {
         caller: callerExtension,
         arguments: {
-          // eslint-disable-next-line prefer-rest-params
           ...arguments
         }
       })
