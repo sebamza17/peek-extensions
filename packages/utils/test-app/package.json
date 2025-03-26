@@ -1,5 +1,5 @@
 {
-  "name": "packages/utils/test-app",
+  "name": "extension-test-app",
   "version": "0.0.0",
   "private": true,
   "description": "Test app for @peek-extensions addon",

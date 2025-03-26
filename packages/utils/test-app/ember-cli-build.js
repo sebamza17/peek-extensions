@@ -4,6 +4,7 @@ const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function (defaults) {
   let app = new EmberApp(defaults, {
+    name: 'extension-test-app',
     'ember-cli-babel': { enableTypeScriptTransform: true },
     autoImport: {
       watchDependencies: ['@peek-extensions'],
