@@ -4,6 +4,10 @@
     "type": "git",
     "url": "git+https://github.com/sebamza17/peek-extensions.git"
   },
+  "workspaces": [
+    "packages/utils/addon",
+    "packages/utils/test-app"
+  ],
   "license": "MIT",
   "author": "sebamza17",
   "scripts": {
@@ -13,7 +17,7 @@
     "prepare": "pnpm build",
     "start": "concurrently 'pnpm:start:*' --restart-after 5000 --prefixColors auto",
     "start:addon": "pnpm --filter @peek-extensions start --no-watch.clearScreen",
-    "start:test-app": "pnpm --filter packages/utils/test-app start",
+    "start:test-app": "pnpm --filter extension-test-app start",
     "test": "pnpm --filter '*' test",
     "test:ember": "pnpm --filter '*' test:ember"
   },
